@@ -75,5 +75,5 @@ async function changeStatus(id,status){try{const r=await fetch('/api/orders/'+en
 async function deleteOrder(id){if(!confirm('¿Eliminar este pedido de la base de datos?'))return;try{const r=await fetch('/api/orders/'+encodeURIComponent(id),{method:'DELETE'});if(!r.ok)throw new Error('No se pudo eliminar');await load();}catch(e){alert(e.message);}}
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active')}));document.getElementById('refresh').onclick=load;load();
 </script>
-</body>
+<button id="logoutBtn" style="position:fixed;right:18px;top:18px;z-index:9999;border:0;border-radius:9px;padding:9px 12px;background:#fff;color:#087CFF;font-weight:900;cursor:pointer">Cerrar sesión</button><script>document.getElementById("logoutBtn").onclick=async()=>{await fetch("/api/logout",{method:"POST"});location.href="/login.html"};</script></body>
 </html>

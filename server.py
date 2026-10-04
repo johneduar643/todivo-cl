@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, session, redirect, url_for
 from pathlib import Path
 import os, sqlite3, json, uuid
 from datetime import datetime
@@ -14,7 +14,13 @@ BASE = Path(__file__).resolve().parent
 SQLITE_DB = BASE / 'todivo.db'
 DATABASE_URL = os.getenv('DATABASE_URL', '').strip()
 USE_POSTGRES = bool(DATABASE_URL)
-app = Flask(__name__, static_folder=str(BASE), static_url_path='')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', '').strip()
+ADMIN_SESSION_SECRET = os.getenv('ADMIN_SESSION_SECRET', '').strip()
+app = Flask(__name__, static_folder=None)
+if not ADMIN_SESSION_SECRET:
+    ADMIN_SESSION_SECRET = os.urandom(32).hex()
+app.secret_key = ADMIN_SESSION_SECRET
+app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax', SESSION_COOKIE_SECURE=True, PERMANENT_SESSION_LIFETIME=3600)
 
 DEFAULT_PRODUCTS = [
 ('audifonos-bluetooth','Audífonos Bluetooth Inalámbricos','Tecnología',29990,39990,25,'Oferta','assets/producto_1.svg','Audífonos inalámbricos con conexión Bluetooth y estuche de carga.'),
@@ -88,6 +94,49 @@ def json_load(v):
     try: return json.loads(v or '[]')
     except Exception: return []
 
+@app.get('/login.html')
+def login_page():
+    return send_from_directory(BASE, 'login.html')
+
+@app.post('/api/login')
+def login():
+    if not ADMIN_PASSWORD:
+        return jsonify({'error':'El acceso de administrador no está configurado. Agrega ADMIN_PASSWORD en Render.'}), 503
+    data = request.get_json(silent=True) or {}
+    if data.get('password','') != ADMIN_PASSWORD:
+        return jsonify({'error':'Contraseña incorrecta'}), 401
+    session.clear()
+    session['admin_authenticated'] = True
+    session.permanent = True
+    return jsonify({'ok':True})
+
+@app.post('/api/logout')
+def logout():
+    session.clear()
+    return jsonify({'ok':True})
+
+def admin_required():
+    return bool(session.get('admin_authenticated'))
+
+def protected_api():
+    if not admin_required():
+        return jsonify({'error':'No autorizado'}), 401
+    return None
+
+def admin_page(filename):
+    if not admin_required():
+        return redirect(url_for('login_page', next=filename))
+    return send_from_directory(BASE, filename)
+
+@app.get('/panel.html')
+def panel_page(): return admin_page('panel.html')
+
+@app.get('/admin.html')
+def admin_catalog_page(): return admin_page('admin.html')
+
+@app.get('/pedidos.html')
+def pedidos_page(): return admin_page('pedidos.html')
+
 @app.get('/api/health')
 def health():
     try:
@@ -106,6 +155,9 @@ def get_products():
 
 @app.post('/api/products')
 def create_product():
+    auth = protected_api()
+    if auth:
+        return auth
     data=request.get_json(force=True); required=['name','category','price','stock']
     if any(data.get(k) in (None,'') for k in required): return jsonify({'error':'Faltan campos obligatorios'}),400
     pid=data.get('id') or uuid.uuid4().hex[:12]; con=db(); p=ph()
@@ -115,16 +167,25 @@ def create_product():
 
 @app.put('/api/products/<pid>')
 def update_product(pid):
+    auth = protected_api()
+    if auth:
+        return auth
     data=request.get_json(force=True); con=db(); p=ph()
     cur=con.execute(f'''UPDATE products SET name={p},category={p},price={p},old_price={p},stock={p},tag={p},image={p},description={p},features={p} WHERE id={p}''',(str(data.get('name','')),str(data.get('category','')),int(data.get('price',0)),int(data.get('oldPrice',0)),int(data.get('stock',0)),str(data.get('tag','')),str(data.get('image','')),str(data.get('description','')),json.dumps(data.get('features',[]),ensure_ascii=False),pid))
     con.commit(); changed=cur.rowcount; con.close(); return jsonify({'ok':True}) if changed else (jsonify({'error':'Producto no encontrado'}),404)
 
 @app.delete('/api/products/<pid>')
 def delete_product(pid):
+    auth = protected_api()
+    if auth:
+        return auth
     con=db(); p=ph(); cur=con.execute(f'DELETE FROM products WHERE id={p}',(pid,)); con.commit(); changed=cur.rowcount; con.close(); return jsonify({'ok':changed>0})
 
 @app.get('/api/orders')
 def get_orders():
+    auth = protected_api()
+    if auth:
+        return auth
     con=db(); rows=con.execute('SELECT * FROM orders ORDER BY created_at DESC').fetchall(); con.close(); out=[]
     for r in rows:
         x=dict(r); x['items']=json_load(x['items']); out.append(x)
@@ -164,16 +225,32 @@ def create_order():
 
 @app.patch('/api/orders/<oid>')
 def update_order(oid):
+    auth = protected_api()
+    if auth:
+        return auth
     status=(request.get_json(force=True) or {}).get('status'); allowed={'Pendiente','Confirmado','Enviado','Entregado','Cancelado'}
     if status not in allowed: return jsonify({'error':'Estado inválido'}),400
     con=db(); p=ph(); cur=con.execute(f'UPDATE orders SET status={p} WHERE id={p}',(status,oid)); con.commit(); changed=cur.rowcount; con.close(); return jsonify({'ok':True}) if changed else (jsonify({'error':'Pedido no encontrado'}),404)
 
 @app.delete('/api/orders/<oid>')
 def delete_order(oid):
+    auth = protected_api()
+    if auth:
+        return auth
     con=db(); p=ph(); cur=con.execute(f'DELETE FROM orders WHERE id={p}',(oid,)); con.commit(); changed=cur.rowcount; con.close(); return jsonify({'ok':changed>0})
 
 @app.get('/')
 def home(): return send_from_directory(BASE,'index.html')
+
+PUBLIC_FILES = {'index.html','producto.html','checkout.html','api.html','catalog.js','login.html','googleff57496071cffa50.html','sitemap.xml'}
+
+@app.get('/<path:filename>')
+def public_files(filename):
+    if filename.startswith('assets/') or filename in PUBLIC_FILES:
+        path = BASE / filename
+        if path.is_file():
+            return send_from_directory(BASE, filename)
+    return jsonify({'error':'No encontrado'}), 404
 
 try:
     init_db()

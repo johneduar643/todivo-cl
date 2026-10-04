@@ -30,7 +30,7 @@ html,body{overflow-x:hidden}
     <div class="links"><a href="panel.html">📊 Panel</a><a href="pedidos.html">📦 Pedidos</a><a href="index.html">← Ver tienda</a></div>
   </div>
   <div class="card">
-    <div class="note"><strong>Modo local:</strong> estos productos se guardan en la base de datos SQLite local del servidor. Los cambios hechos aquí se reflejan en la tienda mientras el servidor esté funcionando.</div>
+    <div class="note"><strong>Modo protegido:</strong> estos productos se guardan en la base de datos online y requieren acceso de administrador. Los cambios hechos aquí se reflejan en la tienda mientras el servidor esté funcionando.</div>
   </div>
   <div class="card">
     <h2 id="formTitle">Agregar producto</h2>
@@ -71,5 +71,5 @@ $('cancelBtn').addEventListener('click',resetForm);
 $('reset').addEventListener('click',async()=>{if(!confirm('¿Restaurar el catálogo demo? Esto eliminará los productos actuales.'))return;try{const old=await todovApiProducts();for(const p of old)await todovApiDeleteProduct(p.id);for(const p of todovGetCatalog())await todovApiCreateProduct(p);await load();alert('Catálogo demo restaurado.');}catch(e){alert(e.message);}});
 load();
 </script>
-</body>
+<button id="logoutBtn" style="position:fixed;right:18px;top:18px;z-index:9999;border:0;border-radius:9px;padding:9px 12px;background:#fff;color:#087CFF;font-weight:900;cursor:pointer">Cerrar sesión</button><script>document.getElementById("logoutBtn").onclick=async()=>{await fetch("/api/logout",{method:"POST"});location.href="/login.html"};</script></body>
 </html>
