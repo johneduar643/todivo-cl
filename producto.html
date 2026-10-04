@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TODIVO CL | Producto</title>
+<style>
+body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#071b49;background:#f7faff}.top{height:34px;background:#061a3a;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:0 4%;font-size:12px}.header{height:105px;background:#fff;display:flex;align-items:center;gap:25px;padding:0 4%;box-shadow:0 2px 8px #071b4914}.logo{width:285px}.search{display:flex;flex:1;max-width:650px}.search input{flex:1;height:44px;border:1px solid #d8e4f2;border-right:0;border-radius:10px 0 0 10px;padding:0 15px}.search button{width:60px;border:0;background:#087cff;color:#fff;border-radius:0 10px 10px 0;font-size:22px}.back{color:#087cff;text-decoration:none;font-weight:800}.wrap{max-width:1200px;margin:35px auto;padding:0 22px}.crumb{font-size:13px;color:#6e7d94;margin-bottom:20px}.product-page{background:#fff;border-radius:18px;border:1px solid #e1e9f3;padding:28px;display:grid;grid-template-columns:1.05fr 1fr;gap:45px;box-shadow:0 8px 30px #071b490c}.photo{background:#f2f8ff;border-radius:18px;display:grid;place-items:center;min-height:470px}.photo img{width:90%;max-height:450px;object-fit:contain}.tag{display:inline-block;background:#ff2038;color:#fff;padding:7px 10px;border-radius:8px;font-size:12px;font-weight:800}.cat{color:#087cff;font-size:12px;font-weight:800;text-transform:uppercase;margin:18px 0 8px}.title{font-size:38px;line-height:1.08;margin:0 0 15px}.stars{color:#f3a900;font-size:16px}.reviews{color:#728097;font-size:12px}.price{font-size:32px;font-weight:900;margin:18px 0 4px}.old{text-decoration:line-through;color:#8997aa;font-size:14px;margin-left:8px;font-weight:500}.desc{color:#5e6e86;line-height:1.6;font-size:15px}.features{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0}.feature{background:#f6f9fd;padding:12px;border-radius:10px;font-size:13px}.qty{display:flex;align-items:center;gap:10px;margin:18px 0}.qty button{width:34px;height:34px;border:1px solid #d6e3f2;background:#fff;border-radius:8px;font-weight:900;cursor:pointer}.qty b{min-width:25px;text-align:center}.add{width:100%;height:48px;border:0;background:#087cff;color:#fff;border-radius:11px;font-weight:900;font-size:15px;cursor:pointer}.add:hover{background:#0069df}.notice{background:#eef8ff;border-radius:11px;padding:13px;margin-top:13px;font-size:12px;color:#315273}.toast{position:fixed;right:20px;bottom:20px;background:#071b49;color:#fff;padding:13px 18px;border-radius:10px;display:none}@media(max-width:800px){.header{height:auto;padding:15px;flex-wrap:wrap}.logo{width:210px}.search{order:3;flex-basis:100%}.product-page{grid-template-columns:1fr;gap:25px}.photo{min-height:300px}.title{font-size:30px}}
+
+.tdv-added-panel{display:none;margin-top:16px;padding:16px;border:1px solid #cfe3ff;background:#f4f9ff;border-radius:14px}
+.tdv-added-panel.show{display:block}
+.tdv-added-title{font-weight:900;color:#071B49;margin-bottom:10px}
+.tdv-added-actions{display:flex;gap:10px;flex-wrap:wrap}
+.tdv-action{display:inline-block;text-decoration:none;border-radius:10px;padding:11px 15px;font-weight:800}
+.tdv-action.primary{background:#087CFF;color:#fff}
+.tdv-action.secondary{background:#fff;color:#087CFF;border:1px solid #087CFF}
+
+html,body{overflow-x:hidden} #tdv-cart-overlay{transform:translateZ(0);backface-visibility:hidden}
+/* V16: estabilidad al hacer scroll */
+
+html,body{overflow-x:hidden}
+/* V18: estructura estable */
+</style><script src="catalog.js"></script>
+</head><body>
+<div class="top"><span>🚚 Envíos a todo Chile</span><span>🛡️ Compra 100% segura</span><span>📦 Devoluciones fáciles</span><span>🎧 Soporte 24/7</span></div>
+<header class="header"><a href="index.html"><img class="logo" src="assets/logo.png" alt="TODIVO CL"></a><div class="search"><input placeholder="Buscar productos..." id="search"><button onclick="goSearch()">⌕</button></div><a class="back" href="index.html">← Volver a la tienda</a></header>
+<main class="wrap"><div class="crumb">Inicio / Productos / <span id="crumb"></span></div>
+<section class="product-page">
+<div class="photo"><img id="photo" alt=""></div>
+<div><span id="tag" class="tag"></span><div id="cat" class="cat"></div><h1 id="title" class="title"></h1><div><span class="stars">★★★★★</span> <span class="reviews">(producto destacado)</span></div><div id="price" class="price"></div><p id="desc" class="desc"></p>
+<div class="features"><div class="feature">🚚 Envíos a todo Chile</div><div class="feature">🔒 Compra segura</div><div class="feature">↩️ Devoluciones fáciles</div><div class="feature">💬 Soporte 24/7</div></div>
+<div class="qty"><button onclick="change(-1)">−</button><b id="qty">1</b><button onclick="change(1)">+</button></div>
+<button class="add" onclick="addToCart()">🛒 Agregar al carrito</button><div class="notice">Compra de prueba: el checkout y los pagos reales se conectarán en la siguiente etapa.</div>
+</div></section></main><div id="toast" class="toast"></div>
+<script>
+let p=null,qty=1;
+function money(n){return '$'+Number(n||0).toLocaleString('es-CL')}
+async function loadProduct(){const params=new URLSearchParams(location.search),key=params.get('p');try{const list=await todovApiProducts();p=list.find(x=>x.name===key||x.id===key||todovSlug(x.name)===key)||list[0];}catch(e){p=todovGetCatalog().find(x=>x.name===key||x.id===key||todovSlug(x.name)===key)||todovGetCatalog()[0];}if(!p)return;document.title='TODIVO CL | '+p.name;document.getElementById('crumb').textContent=p.name;document.getElementById('photo').src=p.image||'assets/producto_1.svg';document.getElementById('photo').alt=p.name;document.getElementById('tag').textContent=p.tag||'';document.getElementById('tag').style.display=p.tag?'inline-block':'none';document.getElementById('cat').textContent=p.category||'General';document.getElementById('title').textContent=p.name;document.getElementById('price').innerHTML=money(p.price)+(p.oldPrice?' <span class="old">'+money(p.oldPrice)+'</span>':'');document.getElementById('desc').textContent=p.description||'';document.querySelector('.notice').textContent=Number(p.stock||0)>0?'Stock disponible: '+p.stock+'. Compra de prueba; los pagos reales se conectarán más adelante.':'Producto sin stock.';document.querySelector('.add').disabled=Number(p.stock||0)<=0;document.querySelector('.add').style.opacity=Number(p.stock||0)<=0?.55:1;}
+function change(n){qty=Math.max(1,qty+n);document.getElementById('qty').textContent=qty}
+function addToCart(){if(!p||Number(p.stock||0)<=0)return;let cart=JSON.parse(localStorage.getItem('todivoCart')||'[]'),x=cart.find(v=>v.id===p.id);if(x)x.qty=Math.min(Number(p.stock),x.qty+qty);else cart.push({id:p.id,name:p.name,price:Number(p.price),qty,image:p.image});localStorage.setItem('todivoCart',JSON.stringify(cart));let t=document.getElementById('toast');t.textContent='✓ Producto agregado al carrito';t.style.display='block';setTimeout(()=>t.style.display='none',1800);}
+function goSearch(){const q=document.getElementById('search').value.trim();location.href='index.html'+(q?'?search='+encodeURIComponent(q):'')}
+loadProduct();
+</script>
+</body></html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catálogo | TODIVO CL</title>
+<script src="catalog.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#071B49}
+.top{background:#071B49;color:#fff;padding:16px 22px}.top-inner{max-width:1150px;margin:auto;display:flex;justify-content:space-between;gap:15px;align-items:center}.logo{font-size:25px;font-weight:900}.logo span{color:#00C8FF}
+.wrap{max-width:1150px;margin:28px auto;padding:0 18px}.head{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}.head h1{margin:0;font-size:30px}.links a{color:#087CFF;font-weight:800;text-decoration:none;margin-left:15px}
+.card{background:#fff;border:1px solid #e2e9f2;border-radius:16px;padding:20px;margin-top:20px;box-shadow:0 8px 25px rgba(7,27,73,.06)}
+.form{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:13px;font-weight:800}.field input,.field textarea,.field select{border:1px solid #ccd7e6;border-radius:9px;padding:11px;font-size:14px}.field textarea{min-height:80px;resize:vertical}
+.btn{border:0;border-radius:9px;padding:11px 15px;font-weight:900;cursor:pointer}.primary{background:#087CFF;color:#fff}.secondary{background:#eaf3ff;color:#087CFF}.danger{background:#fff0f0;color:#c62828}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.products{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.prod{border:1px solid #e4eaf2;border-radius:12px;padding:14px}.prod h3{margin:0 0 5px}.meta{font-size:13px;color:#687894;line-height:1.5}.prod-actions{display:flex;gap:7px;margin-top:10px}
+.note{padding:13px;background:#eef8ff;border:1px solid #cfe8ff;border-radius:10px;color:#315777;font-size:13px;line-height:1.45}
+@media(max-width:800px){.form,.products{grid-template-columns:1fr}}
+html,body{overflow-x:hidden} #tdv-cart-overlay{transform:translateZ(0);backface-visibility:hidden}
+/* V16: estabilidad al hacer scroll */
+
+html,body{overflow-x:hidden}
+/* V18: estructura estable */
+</style>
+</head>
+<body>
+<div class="top"><div class="top-inner"><div class="logo">TODIVO <span>CL</span></div><div>Catálogo de productos</div></div></div>
+<div class="wrap">
+  <div class="head">
+    <h1>Administrar catálogo</h1>
+    <div class="links"><a href="panel.html">📊 Panel</a><a href="pedidos.html">📦 Pedidos</a><a href="index.html">← Ver tienda</a></div>
+  </div>
+  <div class="card">
+    <div class="note"><strong>Modo local:</strong> estos productos se guardan en la base de datos SQLite local del servidor. Los cambios hechos aquí se reflejan en la tienda mientras el servidor esté funcionando.</div>
+  </div>
+  <div class="card">
+    <h2 id="formTitle">Agregar producto</h2>
+    <form id="form">
+      <div class="form">
+        <div class="field"><label>Nombre *</label><input id="name" required placeholder="Ej: Cámara WiFi 360"></div>
+        <div class="field"><label>Categoría *</label><input id="category" required placeholder="Tecnología"></div>
+        <div class="field"><label>Precio *</label><input id="price" type="number" min="0" required placeholder="29990"></div>
+        <div class="field"><label>Precio anterior</label><input id="oldPrice" type="number" min="0" placeholder="39990"></div>
+        <div class="field"><label>Stock *</label><input id="stock" type="number" min="0" required value="10"></div>
+        <div class="field"><label>Etiqueta</label><input id="tag" placeholder="Oferta"></div>
+        <div class="field full"><label>Imagen (ruta local o URL)</label><input id="image" placeholder="assets/product-1.svg"></div>
+        <div class="field full"><label>Descripción</label><textarea id="description" placeholder="Describe el producto..."></textarea></div>
+        <div class="field full"><label>Características (separadas por coma)</label><input id="features" placeholder="Bluetooth, Batería, Portátil"></div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" type="submit" id="saveBtn">Guardar producto</button>
+        <button class="btn secondary" type="button" id="cancelBtn" style="display:none">Cancelar edición</button>
+      </div>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Productos actuales</h2>
+    <div id="products" class="products"></div>
+    <div class="actions"><button class="btn danger" id="reset">Restaurar catálogo demo</button></div>
+  </div>
+</div>
+<script>
+let editing=null, products=[]; const $=id=>document.getElementById(id);
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function load(){try{products=await todovApiProducts(); render();}catch(e){alert('No se pudo conectar con la base de datos. ¿Está corriendo server.py?'); products=todovGetCatalog(); render();}}
+function render(){const box=$('products');box.innerHTML=products.map((p,i)=>`<div class="prod"><h3>${esc(p.name)}</h3><div class="meta"><b>${esc(p.category)}</b><br>Precio: ${todovMoney(p.price)}${p.oldPrice?' · Antes: '+todovMoney(p.oldPrice):''}<br>Stock: ${Number(p.stock||0)}${p.tag?' · '+esc(p.tag):''}</div><div class="prod-actions"><button class="btn secondary" onclick="editProduct(${i})">Editar</button><button class="btn danger" onclick="deleteProduct(${i})">Eliminar</button></div></div>`).join('');}
+function editProduct(i){const p=products[i];if(!p)return;editing=i;$('formTitle').textContent='Editar producto';$('saveBtn').textContent='Actualizar producto';$('cancelBtn').style.display='inline-block';['name','category','price','oldPrice','stock','tag','image','description','features'].forEach(k=>$(k).value=k==='features'?(p.features||[]).join(', '):(k==='oldPrice'?(p.oldPrice??''):(p[k]??'')));window.scrollTo({top:0,behavior:'smooth'});}
+async function deleteProduct(i){const p=products[i];if(!p||!confirm('¿Eliminar este producto de la base de datos?'))return;try{await todovApiDeleteProduct(p.id);await load();}catch(e){alert(e.message);}}
+$('form').addEventListener('submit',async e=>{e.preventDefault();const product={id:editing===null?undefined:products[editing].id,name:$('name').value.trim(),category:$('category').value.trim(),price:Number($('price').value||0),oldPrice:Number($('oldPrice').value||0),stock:Number($('stock').value||0),tag:$('tag').value.trim(),image:$('image').value.trim()||'assets/producto_1.svg',description:$('description').value.trim(),features:$('features').value.split(',').map(x=>x.trim()).filter(Boolean)};try{if(editing===null)await todovApiCreateProduct(product);else await todovApiUpdateProduct(product.id,product);resetForm();await load();alert('Producto guardado en la base de datos.');}catch(e){alert(e.message);}});
+function resetForm(){editing=null;$('form').reset();$('stock').value=10;$('formTitle').textContent='Agregar producto';$('saveBtn').textContent='Guardar producto';$('cancelBtn').style.display='none';}
+$('cancelBtn').addEventListener('click',resetForm);
+$('reset').addEventListener('click',async()=>{if(!confirm('¿Restaurar el catálogo demo? Esto eliminará los productos actuales.'))return;try{const old=await todovApiProducts();for(const p of old)await todovApiDeleteProduct(p.id);for(const p of todovGetCatalog())await todovApiCreateProduct(p);await load();alert('Catálogo demo restaurado.');}catch(e){alert(e.message);}});
+load();
+</script>
+</body>
+</html>

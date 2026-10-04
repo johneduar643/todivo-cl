@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pedidos | TODIVO CL</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#071B49}
+.top{background:#071B49;color:#fff;padding:16px 22px}.top-inner{max-width:1150px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:15px}.logo{font-size:25px;font-weight:900}.logo span{color:#00C8FF}
+.wrap{max-width:1150px;margin:28px auto;padding:0 18px}.head{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}.head h1{margin:0;font-size:30px}.link{color:#087CFF;font-weight:800;text-decoration:none}
+.card{background:#fff;border:1px solid #e2e9f2;border-radius:16px;padding:20px;margin-top:20px;box-shadow:0 8px 25px rgba(7,27,73,.06)}
+.note{padding:13px;background:#eef8ff;border:1px solid #cfe8ff;border-radius:10px;color:#315777;font-size:13px;line-height:1.45}
+.order{border:1px solid #e1e8f1;border-radius:13px;padding:17px;margin-top:14px}.order-head{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}.code{font-weight:900;color:#087CFF}.status{background:#fff5d9;color:#916700;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:900}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:15px}.box{background:#f8fafc;border-radius:10px;padding:12px;font-size:14px;line-height:1.5}.box strong{color:#071B49}.items{margin-top:12px;border-top:1px solid #edf1f7;padding-top:12px}.item{display:flex;justify-content:space-between;gap:10px;padding:7px 0}.total{display:flex;justify-content:flex-end;font-size:19px;font-weight:900;margin-top:10px}
+.empty{text-align:center;padding:55px 15px;color:#6b7b92}.empty strong{display:block;font-size:21px;color:#071B49;margin-bottom:8px}
+.btn{display:inline-block;margin-top:16px;background:#087CFF;color:#fff;text-decoration:none;padding:11px 16px;border-radius:9px;font-weight:900}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top"><div class="top-inner"><div class="logo">TODIVO <span>CL</span></div><div>Gestión de pedidos</div></div></div>
+<div class="wrap">
+  <div class="head"><h1>Pedidos</h1><a class="link" href="index.html">← Volver a la tienda</a></div>
+  <div class="card">
+    <div class="note"><strong>Modo demo:</strong> aquí se muestran los pedidos guardados en este navegador. Todavía no existe una base de datos online ni pedidos reales.</div>
+  </div>
+  <div id="orders"></div>
+</div>
+<script>
+function money(n){return '$'+Number(n||0).toLocaleString('es-CL')}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function getOrders(){
+  try{
+    const all=JSON.parse(localStorage.getItem('todivoOrders')||'[]');
+    if(Array.isArray(all)&&all.length)return all;
+  }catch(e){}
+  try{
+    const last=JSON.parse(localStorage.getItem('todivoLastOrder')||'null');
+    return last?[last]:[];
+  }catch(e){return[]}
+}
+function render(){
+ const box=document.getElementById('orders'), orders=getOrders();
+ if(!orders.length){
+   box.innerHTML='<div class="card empty"><strong>Aún no hay pedidos</strong><span>Cuando completes un pedido de prueba aparecerá aquí.</span><br><a class="btn" href="index.html">Ir a la tienda</a></div>';
+   return;
+ }
+ box.innerHTML=orders.slice().reverse().map(o=>{
+   const c=o.customer||{};
+   const items=(o.items||[]).map(x=>'<div class="item"><span>'+esc(x.name)+' × '+Number(x.qty||1)+'</span><strong>'+money(Number(x.price||0)*Number(x.qty||1))+'</strong></div>').join('');
+   return '<div class="card order">'+
+     '<div class="order-head"><div><div class="code">'+esc(o.code||'PEDIDO DEMO')+'</div><small>'+new Date(o.createdAt||Date.now()).toLocaleString('es-CL')+'</small></div><span class="status">Pendiente · DEMO</span></div>'+
+     '<div class="grid"><div class="box"><strong>Cliente</strong><br>'+esc(c.name||'—')+'<br>'+esc(c.email||'—')+'<br>'+esc(c.phone||'—')+'</div>'+
+     '<div class="box"><strong>Entrega</strong><br>'+esc(c.address||'—')+', '+esc(c.commune||'—')+'<br>Región: '+esc(c.region||'—')+'<br>Método: '+esc(o.shipping||'—')+'</div></div>'+
+     '<div class="items">'+items+'</div>'+
+     '<div class="total">Total: '+money(o.total)+'</div>'+
+   '</div>';
+ }).join('');
+}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+TODIVO CL V23 - BASE DE DATOS CONECTADA
+
+1) Abre esta carpeta en Terminal.
+2) Ejecuta: python server.py
+3) Abre: http://127.0.0.1:5000
+
+La base de datos todovo.db se crea automáticamente.
+El catálogo, pedidos y panel de administración consultan la API y SQLite.
+No hay pagos reales todavía.
