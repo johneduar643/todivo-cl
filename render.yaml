@@ -6,3 +6,6 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn server:app
     healthCheckPath: /api/health
+    envVars:
+      - key: ADMIN_SESSION_SECRET
+        generateValue: true

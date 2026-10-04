@@ -1,9 +1,12 @@
-TODIVO CL V23 - BASE DE DATOS CONECTADA
+TODIVO CL V30 FINAL - INICIO
 
-1) Abre esta carpeta en Terminal.
-2) Ejecuta: python server.py
-3) Abre: http://127.0.0.1:5000
+PARA USARLO EN TU PC:
+1. Haz doble clic en INICIAR_TODIVO_LOCAL.bat
+2. Se abrirá el servidor y luego la tienda en Chrome.
+3. Para entrar al administrador, abre /login.html desde la tienda.
+4. Contraseña local: Todivo#2026!CL
 
-La base de datos todovo.db se crea automáticamente.
-El catálogo, pedidos y panel de administración consultan la API y SQLite.
-No hay pagos reales todavía.
+IMPORTANTE:
+- INICIAR_TODIVO_LOCAL.bat es solo para tu PC. NO lo subas a GitHub.
+- En Render, ADMIN_PASSWORD se mantiene como variable privada.
+- Para detener el servidor local, cierra la ventana negra del servidor.

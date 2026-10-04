@@ -1,0 +1,3 @@
+TODIVO CL V28 - PANEL PROTEGIDO
+
+En Render agrega: ADMIN_PASSWORD y ADMIN_SESSION_SECRET. No las guardes en GitHub.

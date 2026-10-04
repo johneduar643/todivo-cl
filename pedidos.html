@@ -1,63 +1,10 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pedidos | TODIVO CL</title>
-<style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#071B49}
-.top{background:#071B49;color:#fff;padding:16px 22px}.top-inner{max-width:1150px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:15px}.logo{font-size:25px;font-weight:900}.logo span{color:#00C8FF}
-.wrap{max-width:1150px;margin:28px auto;padding:0 18px}.head{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}.head h1{margin:0;font-size:30px}.link{color:#087CFF;font-weight:800;text-decoration:none}
-.card{background:#fff;border:1px solid #e2e9f2;border-radius:16px;padding:20px;margin-top:20px;box-shadow:0 8px 25px rgba(7,27,73,.06)}
-.note{padding:13px;background:#eef8ff;border:1px solid #cfe8ff;border-radius:10px;color:#315777;font-size:13px;line-height:1.45}
-.order{border:1px solid #e1e8f1;border-radius:13px;padding:17px;margin-top:14px}.order-head{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}.code{font-weight:900;color:#087CFF}.status{background:#fff5d9;color:#916700;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:900}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:15px}.box{background:#f8fafc;border-radius:10px;padding:12px;font-size:14px;line-height:1.5}.box strong{color:#071B49}.items{margin-top:12px;border-top:1px solid #edf1f7;padding-top:12px}.item{display:flex;justify-content:space-between;gap:10px;padding:7px 0}.total{display:flex;justify-content:flex-end;font-size:19px;font-weight:900;margin-top:10px}
-.empty{text-align:center;padding:55px 15px;color:#6b7b92}.empty strong{display:block;font-size:21px;color:#071B49;margin-bottom:8px}
-.btn{display:inline-block;margin-top:16px;background:#087CFF;color:#fff;text-decoration:none;padding:11px 16px;border-radius:9px;font-weight:900}
-@media(max-width:700px){.grid{grid-template-columns:1fr}}
-</style>
-</head>
-<body>
-<div class="top"><div class="top-inner"><div class="logo">TODIVO <span>CL</span></div><div>Gestión de pedidos</div></div></div>
-<div class="wrap">
-  <div class="head"><h1>Pedidos</h1><a class="link" href="index.html">← Volver a la tienda</a></div>
-  <div class="card">
-    <div class="note"><strong>Modo demo:</strong> aquí se muestran los pedidos guardados en este navegador. Todavía no existe una base de datos online ni pedidos reales.</div>
-  </div>
-  <div id="orders"></div>
-</div>
-<script>
-function money(n){return '$'+Number(n||0).toLocaleString('es-CL')}
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function getOrders(){
-  try{
-    const all=JSON.parse(localStorage.getItem('todivoOrders')||'[]');
-    if(Array.isArray(all)&&all.length)return all;
-  }catch(e){}
-  try{
-    const last=JSON.parse(localStorage.getItem('todivoLastOrder')||'null');
-    return last?[last]:[];
-  }catch(e){return[]}
-}
-function render(){
- const box=document.getElementById('orders'), orders=getOrders();
- if(!orders.length){
-   box.innerHTML='<div class="card empty"><strong>Aún no hay pedidos</strong><span>Cuando completes un pedido de prueba aparecerá aquí.</span><br><a class="btn" href="index.html">Ir a la tienda</a></div>';
-   return;
- }
- box.innerHTML=orders.slice().reverse().map(o=>{
-   const c=o.customer||{};
-   const items=(o.items||[]).map(x=>'<div class="item"><span>'+esc(x.name)+' × '+Number(x.qty||1)+'</span><strong>'+money(Number(x.price||0)*Number(x.qty||1))+'</strong></div>').join('');
-   return '<div class="card order">'+
-     '<div class="order-head"><div><div class="code">'+esc(o.code||'PEDIDO DEMO')+'</div><small>'+new Date(o.createdAt||Date.now()).toLocaleString('es-CL')+'</small></div><span class="status">Pendiente · DEMO</span></div>'+
-     '<div class="grid"><div class="box"><strong>Cliente</strong><br>'+esc(c.name||'—')+'<br>'+esc(c.email||'—')+'<br>'+esc(c.phone||'—')+'</div>'+
-     '<div class="box"><strong>Entrega</strong><br>'+esc(c.address||'—')+', '+esc(c.commune||'—')+'<br>Región: '+esc(c.region||'—')+'<br>Método: '+esc(o.shipping||'—')+'</div></div>'+
-     '<div class="items">'+items+'</div>'+
-     '<div class="total">Total: '+money(o.total)+'</div>'+
-   '</div>';
- }).join('');
-}
-render();
-</script>
-<button id="logoutBtn" style="position:fixed;right:18px;top:18px;z-index:9999;border:0;border-radius:9px;padding:9px 12px;background:#fff;color:#087CFF;font-weight:900;cursor:pointer">Cerrar sesión</button><script>document.getElementById("logoutBtn").onclick=async()=>{await fetch("/api/logout",{method:"POST"});location.href="/login.html"};</script></body>
-</html>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pedidos | TODIVO CL</title><style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#071B49}.top{background:#071B49;color:#fff;padding:15px 22px}.top-in{max-width:1150px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:15px}.logo{font-size:25px;font-weight:900}.logo span{color:#00C8FF}.wrap{max-width:1150px;margin:28px auto;padding:0 18px}.head{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}.head h1{margin:0;font-size:30px}.link{color:#087CFF;font-weight:800;text-decoration:none}.card{background:#fff;border:1px solid #e2e9f2;border-radius:16px;padding:20px;margin-top:20px;box-shadow:0 8px 25px rgba(7,27,73,.06)}.note{padding:13px;background:#eef8ff;border:1px solid #cfe8ff;border-radius:10px;color:#315777;font-size:13px;line-height:1.45}.order{border:1px solid #e1e8f1;border-radius:13px;padding:17px;margin-top:14px}.order-head{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}.code{font-weight:900;color:#087CFF}.status{border:0;border-radius:999px;padding:7px 10px;font-weight:900;font-size:12px}.pending{background:#fff5d9;color:#916700}.confirmed{background:#e8f7ee;color:#14804a}.sent{background:#eaf3ff;color:#1268bd}.delivered{background:#e8f7ee;color:#117344}.cancelled{background:#fff0f0;color:#b32626}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:15px}.box{background:#f8fafc;border-radius:10px;padding:12px;font-size:14px;line-height:1.5}.items{margin-top:12px;border-top:1px solid #edf1f7;padding-top:12px}.item{display:flex;justify-content:space-between;gap:10px;padding:7px 0}.total{display:flex;justify-content:flex-end;font-size:19px;font-weight:900;margin-top:10px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.btn{border:0;border-radius:8px;padding:9px 12px;font-weight:800;cursor:pointer}.primary{background:#087CFF;color:#fff}.light{background:#edf5ff;color:#087CFF}.danger{background:#fff0f0;color:#c62828}.select{border:1px solid #ccd7e6;border-radius:8px;padding:8px;background:#fff;font-weight:700}.empty{text-align:center;padding:55px 15px;color:#6b7b92}.muted{color:#718198;font-size:12px}@media(max-width:700px){.grid{grid-template-columns:1fr}}
+</style></head><body><div class="top"><div class="top-in"><div class="logo">TODIVO <span>CL</span></div><div>Gestión de pedidos</div></div></div><div class="wrap"><div class="head"><h1>Pedidos</h1><div><a class="link" href="/panel.html">← Centro</a> &nbsp; <a class="link" href="/index.html">Tienda</a></div></div><div class="card"><div class="note"><strong>Pedidos reales del servidor:</strong> esta página consulta la API y la base de datos de TODIVO CL. Los cambios de estado se guardan en el servidor.</div><div class="actions"><button class="btn light" onclick="load()">Actualizar</button><button class="btn primary" onclick="exportCsv()">Exportar CSV</button></div></div><div id="orders"></div></div><script>
+const $=id=>document.getElementById(id),money=n=>'$'+Number(n||0).toLocaleString('es-CL'),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const cls=s=>({Pendiente:'pending',Confirmado:'confirmed',Enviado:'sent',Entregado:'delivered',Cancelado:'cancelled'})[s]||'pending';let orders=[];
+async function api(url,opt={}){const r=await fetch(url,{cache:'no-store',...opt,headers:{'Content-Type':'application/json',...(opt.headers||{})}});if(r.status===401){location.href='/login.html?next=pedidos.html';throw Error('Sesión');}const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'Error');return d}
+async function load(){try{orders=await api('/api/orders');render()}catch(e){if(e.message!=='Sesión')$('orders').innerHTML='<div class="card empty">No se pudo conectar con el servidor.</div>'}}
+function render(){$('orders').innerHTML=orders.length?orders.map(o=>{const items=(o.items||[]).map(x=>`<div class="item"><span>${esc(x.name)} × ${Number(x.qty||1)}</span><strong>${money(Number(x.price||0)*Number(x.qty||1))}</strong></div>`).join('');return `<div class="card order"><div class="order-head"><div><div class="code">${esc(o.code)}</div><div class="muted">${new Date(o.created_at).toLocaleString('es-CL')}</div></div><div><select class="select" onchange="status('${esc(o.id)}',this.value)">${['Pendiente','Confirmado','Enviado','Entregado','Cancelado'].map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}</select></div></div><div class="grid"><div class="box"><strong>Cliente</strong><br>${esc(o.customer_name)}<br>${esc(o.email)}<br>${esc(o.phone)}</div><div class="box"><strong>Entrega</strong><br>${esc(o.address)}, ${esc(o.commune)}<br>Región: ${esc(o.region)}<br>Método: ${esc(o.shipping)}</div></div><div class="items">${items}</div><div class="total">Total: ${money(o.total)}</div><div class="actions"><button class="btn danger" onclick="del('${esc(o.id)}')">Eliminar pedido</button></div></div>`}).join(''):'<div class="card empty"><strong>Aún no hay pedidos</strong><br>Cuando llegue un pedido aparecerá aquí.</div>'}
+async function status(id,status){try{await api('/api/orders/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({status})});await load()}catch(e){alert(e.message)}}async function del(id){if(!confirm('¿Eliminar este pedido?'))return;try{await api('/api/orders/'+encodeURIComponent(id),{method:'DELETE'});await load()}catch(e){alert(e.message)}}
+function exportCsv(){const rows=[['Pedido','Cliente','Email','Teléfono','Total','Pago','Estado','Fecha'],...orders.map(o=>[o.code,o.customer_name,o.email,o.phone,o.total,o.payment,o.status,o.created_at])];const csv='\ufeff'+rows.map(r=>r.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='todivo-pedidos.csv';a.click();URL.revokeObjectURL(a.href)}load();
+</script></body></html>
