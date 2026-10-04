@@ -25,7 +25,7 @@ DEFAULT_PRODUCTS = [
 ('mouse-gamer-pro','Mouse Gamer Pro','Gaming',19990,27990,20,'Oferta','assets/producto_6.svg','Mouse gamer preciso para sesiones de juego y trabajo.'),
 ('lampara-led-smart','Lámpara LED Smart','Hogar',16990,22990,30,'Oferta','assets/producto_7.svg','Lámpara LED moderna para escritorio y dormitorio.'),
 ('mochila-urbana','Mochila Urbana','Moda',27990,34990,16,'Oferta','assets/producto_8.svg','Mochila práctica para uso diario.'),
-('parlante-bluetooth','Parlante Bluetooth','Tecnología',25990,32990,21,'Oferta','Parlante portátil para música y entretenimiento.'),
+('parlante-bluetooth','Parlante Bluetooth','Tecnología',25990,32990,21,'Oferta','assets/producto_9.svg','Parlante portátil para música y entretenimiento.'),
 ('organizador-multiuso','Organizador Multiuso','Hogar',12990,17990,35,'Oferta','assets/producto_10.svg','Organizador práctico para mantener tus espacios ordenados.')]
 
 def db():
