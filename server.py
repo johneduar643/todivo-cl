@@ -61,7 +61,7 @@ def init_db():
             for p in DEFAULT_PRODUCTS:
                 con.execute('''INSERT INTO products
                     (id,name,category,price,old_price,stock,tag,image,description,features,created_at)
-                    VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''', (*p,'[]',now))
+                    VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''', tuple(p) + ('[]', now))
     else:
         con.executescript('''CREATE TABLE IF NOT EXISTS products(
             id TEXT PRIMARY KEY,name TEXT NOT NULL,category TEXT NOT NULL,
@@ -81,7 +81,7 @@ def init_db():
             for p in DEFAULT_PRODUCTS:
                 con.execute('''INSERT INTO products
                     (id,name,category,price,old_price,stock,tag,image,description,features,created_at)
-                    VALUES(?,?,?,?,?,?,?,?,?,?,?)''', (*p,'[]',now))
+                    VALUES(?,?,?,?,?,?,?,?,?,?,?)''', tuple(p) + ('[]', now))
     con.commit(); con.close()
 
 def json_load(v):
