@@ -38,7 +38,7 @@ def db():
     if USE_POSTGRES:
         if psycopg is None:
             raise RuntimeError('Falta psycopg. Revisa requirements.txt.')
-        return psycopg.connect(DATABASE_URL, row_factory=dict_row)
+        return psycopg.connect(DATABASE_URL, row_factory=dict_row, connect_timeout=10)
     con = sqlite3.connect(SQLITE_DB)
     con.row_factory = sqlite3.Row
     return con
@@ -252,11 +252,22 @@ def public_files(filename):
             return send_from_directory(BASE, filename)
     return jsonify({'error':'No encontrado'}), 404
 
-try:
-    init_db()
-    print('TODIVO CL DB:', 'PostgreSQL' if USE_POSTGRES else 'SQLite')
-except Exception as e:
-    print('ERROR inicializando base de datos:',repr(e))
+def ensure_db():
+    try:
+        init_db()
+        return True
+    except Exception as e:
+        print('ERROR inicializando base de datos:', repr(e), flush=True)
+        return False
+
+@app.before_request
+def prepare_database():
+    # Initialize on first request. This keeps Gunicorn from being blocked
+    # during import if the database is temporarily unavailable.
+    if not getattr(app, '_db_ready', False):
+        if ensure_db():
+            app._db_ready = True
+
 
 if __name__=='__main__':
     print('TODIVO CL API: http://127.0.0.1:5000'); app.run(host='127.0.0.1',port=5000,debug=True)
